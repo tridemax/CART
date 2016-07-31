@@ -81,9 +81,8 @@ namespace CART
 	/// Somewhat better than classic LRU caching strategy, with comparable execution speed.
 	/// http://usenix.org/legacy/publications/library/proceedings/fast04/tech/full_papers/bansal/bansal.pdf
 	///
-	/// If you need to include user data into key - use CacheCompoundKey implementation as KEY template argument.
+	/// If you need to include user data into the key - use CacheCompoundKey implementation as KEY template argument.
 	/// INTERFACE class should implement ICacheControl interface.
-	/// OBJ_SIZE_CAN_CHANGE control how often cache will query for object size.
 	//---------------------------------------------------------------------
 	template <typename KEY, typename VALUE, typename INTERFACE>
 	class Cache
@@ -170,7 +169,7 @@ namespace CART
 	public:
 		//---------------------------------------------------------------------
 		/// @brief				Constructor.
-		/// @param functor		Functor to acquire and release values from persistent storage.
+		/// @param _interface	Interface to acquire and release values from (persistent) storage.
 		/// @param maxNumElements Maximum number of elements this instance supports. Can be zero for unlimited number of elements.
 		/// @param maxUsedMemory Maximum amount of memory this instance will consume. Can be zero for unlimited amount of memory.
 		inline Cache(INTERFACE& _interface, size_t maxNumElements, size_t maxUsedMemory) : m_interface(_interface)
@@ -233,15 +232,15 @@ namespace CART
 		}
 
 		//---------------------------------------------------------------------
-		/// Inserts value into cache. Does not updates existing values.
-		/// Check returned value(). If it is different from value pointer you submitted - do not forget to delete your submitted value because another thread inserted it already.
+		/// Inserts value into cache. Does not update existing values.
+		/// Check returned handle value pointer. If it is different from the value pointer you submitted - do not forget to delete your submitted value because another thread inserted it already.
 		inline Handle InsertIntoCache(KEY key, VALUE* value)
 		{
 			return InternalInsert(key, value);
 		}
 
 		//---------------------------------------------------------------------
-		/// Removes value from cache. Use only if you are 100% sure this value will no longer be used again.
+		/// Removes value from cache.
 		inline void RemoveFromCache(KEY key)
 		{
 			return InternalRemove(key);
@@ -685,7 +684,7 @@ namespace CART
 			VALUE*				page;
 			bool				referenceBit;
 			bool				longBit;		// false means Short, true means Long
-			bool				firstList;		// element is in T1 or B1 list
+			bool				firstList;		// element is in T1/B1 list
 
 			//---------------------------------------------------------------------
 			inline CLOCKElement(KEY pageKey, VALUE* page) : pageKey(pageKey), page(page) { }
